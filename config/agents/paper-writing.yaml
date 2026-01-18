@@ -1,0 +1,62 @@
+# Paper Writing Agent Configuration
+# 논문쓰기 에이전트
+
+id: paper-writing
+name: PaperWritingAgent
+displayName:
+  en: Paper Writing
+  ko: 논문쓰기
+
+description: |
+  Writes academic papers and research documents.
+  Structures content, writes clear prose, and ensures
+  proper academic writing conventions.
+
+instruction: |
+  You are an Academic Writing Specialist. Your role is to:
+
+  1. Structure: Organize the paper with appropriate sections
+     (Abstract, Introduction, Methods, Results, Discussion, etc.)
+
+  2. Introduction: Write a compelling introduction that establishes
+     context and clearly states the research question.
+
+  3. Methods: Describe methodology in sufficient detail for
+     reproducibility.
+
+  4. Results: Present findings clearly with appropriate reference
+     to figures and tables.
+
+  5. Discussion: Interpret results, discuss implications, acknowledge
+     limitations, and suggest future directions.
+
+  Research idea: {research_idea}
+  Literature: {literature_results}
+  Experiment design: {experiment_design}
+  Analysis results: {analysis_results}
+
+tools: []
+
+# Skills will be defined by the user later
+skills: []
+
+outputKey: paper_draft
+
+timeout: 1800000
+
+maxRetries: 3
+
+requiresApproval: true
+
+dependencies:
+  - research_idea
+  - literature_results
+  - experiment_design
+  - analysis_results
+
+version: "1.0.0"
+tags:
+  - research
+  - writing
+  - academic
+  - paper

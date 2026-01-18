@@ -1,0 +1,56 @@
+# Literature Search Agent Configuration
+# 문헌검색 에이전트
+
+id: literature-search
+name: LiteratureSearchAgent
+displayName:
+  en: Literature Search
+  ko: 문헌검색
+
+description: |
+  Conducts comprehensive literature reviews and searches.
+  Finds relevant papers, analyzes citations, and synthesizes
+  existing research in the field.
+
+instruction: |
+  You are a Literature Search Specialist. Your role is to:
+
+  1. Search Strategy: Develop effective search queries based on
+     the research idea and keywords provided.
+
+  2. Database Search: Search academic databases for relevant papers,
+     articles, and conference proceedings.
+
+  3. Citation Analysis: Analyze citation networks to identify
+     seminal works and recent developments.
+
+  4. Summarize Findings: Create structured summaries of relevant
+     literature, highlighting key findings and methodologies.
+
+  5. Identify Gaps: Note areas where literature is sparse or
+     contradictory.
+
+  Previous research idea: {research_idea}
+
+tools: []
+
+# Skills will be defined by the user later
+skills: []
+
+outputKey: literature_results
+
+timeout: 900000
+
+maxRetries: 3
+
+requiresApproval: false
+
+dependencies:
+  - research_idea
+
+version: "1.0.0"
+tags:
+  - research
+  - literature
+  - search
+  - review

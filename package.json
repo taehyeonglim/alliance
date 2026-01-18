@@ -1,0 +1,45 @@
+{
+  "name": "alliance",
+  "version": "0.1.0",
+  "description": "AI Co-scientist multi-agent system for research workflow automation",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "ai",
+    "multi-agent",
+    "research",
+    "co-scientist",
+    "workflow",
+    "automation"
+  ],
+  "author": "Taehyeong Lim",
+  "license": "MIT",
+  "dependencies": {
+    "yaml": "^2.3.4",
+    "zod": "^3.22.4",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/uuid": "^9.0.7",
+    "typescript": "^5.3.2",
+    "tsx": "^4.6.2",
+    "vitest": "^1.0.4",
+    "eslint": "^8.55.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.2",
+    "@typescript-eslint/parser": "^6.13.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

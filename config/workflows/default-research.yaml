@@ -1,0 +1,21 @@
+# Default Research Workflow Configuration
+# 기본 연구 워크플로우
+
+id: default-research
+name: Default Research Workflow
+type: sequential
+
+agents:
+  - id: idea-building
+  - id: literature-search
+  - id: experiment-design
+  - id: data-analysis
+  - id: paper-writing
+  - id: formatting-review
+
+config:
+  continueOnError: false
+  approvalGates:
+    - experiment-design
+    - paper-writing
+    - formatting-review
