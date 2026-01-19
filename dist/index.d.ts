@@ -6,7 +6,7 @@ export type { IAgent, IWorkflowAgent, Skill, AgentLifecycleHooks, HumanResponse,
 export type { AgentContext, AgentResult, AgentConfig, ResearchStage, WorkflowDefinition, ExecutionOptions, } from './core/types/index.js';
 export { AgentConfigSchema, RESEARCH_STAGES, StateKeys, WorkflowDefinitionSchema, } from './core/types/index.js';
 export { BaseAgent } from './core/base/index.js';
-export { StateManager, MemoryPersistenceAdapter } from './state/index.js';
+export { StateManager, MemoryPersistenceAdapter, FilePersistenceAdapter } from './state/index.js';
 export { WorkflowEngine, SequentialWorkflow, ParallelWorkflow, LoopWorkflow, } from './orchestration/index.js';
 export type { IAgentRegistry } from './orchestration/index.js';
 export { InterventionManager, ConsoleInterventionHandler, ApprovalGate, DEFAULT_RESEARCH_GATES, } from './human-in-loop/index.js';
@@ -28,8 +28,11 @@ import type { ExecutionOptions } from './core/types/index.js';
  */
 export interface AllianceConfig {
     configDir?: string;
+    dataDir?: string;
     logLevel?: 'debug' | 'info' | 'warn' | 'error';
     autoApprove?: boolean;
+    /** Use file-based persistence for multi-device Git sync (default: true) */
+    persistToFile?: boolean;
 }
 /**
  * Main Alliance class - entry point for the AI Co-scientist system

@@ -1,0 +1,141 @@
+# Mixed Methods Research Workflow Configuration
+# 혼합 연구 워크플로우
+
+id: mixed-methods-research
+name: Mixed Methods Research Workflow
+type: hybrid
+description: 순차적/동시적 혼합연구, 실행연구 등을 위한 워크플로우
+
+methodology:
+  category: mixed
+  supportedMethods:
+    - sequential-explanatory
+    - sequential-exploratory
+    - convergent-parallel
+    - embedded-design
+    - action-research
+    - delphi-method
+
+agents:
+  - id: idea-building
+    config:
+      focus: mixed-methods-rationale
+      output:
+        - research_questions_qual
+        - research_questions_quan
+        - integration_rationale
+        - mixed_methods_design_type
+
+  - id: literature-search
+    config:
+      focus: comprehensive-search
+      searchPriority:
+        - mixed-methods-studies
+        - quantitative-studies
+        - qualitative-studies
+        - integration-methods
+
+  # 혼합연구 설계에 따른 분기점
+  - id: experiment-design
+    config:
+      focus: mixed-methods-design
+      designElements:
+        - design_type_selection  # 순차적/동시적/내재적
+        - quan_component_design
+        - qual_component_design
+        - integration_strategy
+        - timing_and_weighting
+
+  # 양적 분석 단계
+  - id: data-analysis-quantitative
+    parentAgent: data-analysis
+    config:
+      focus: statistical-analysis
+      analysisTypes:
+        - descriptive_statistics
+        - inferential_statistics
+
+  # 질적 분석 단계
+  - id: data-analysis-qualitative
+    parentAgent: data-analysis
+    config:
+      focus: qualitative-analysis
+      analysisTypes:
+        - thematic_analysis
+        - coding
+
+  # 통합 분석 단계
+  - id: data-integration
+    config:
+      focus: integration-analysis
+      integrationStrategies:
+        - joint_display
+        - data_transformation
+        - narrative_weaving
+        - meta_inference
+
+  - id: paper-writing
+    config:
+      format: mixed-methods-paper
+      sections:
+        - abstract
+        - introduction
+        - literature_review
+        - methodology
+        - quantitative_results
+        - qualitative_findings
+        - integration_and_discussion
+        - conclusion
+
+  - id: formatting-review
+
+config:
+  continueOnError: false
+  approvalGates:
+    - experiment-design
+    - data-integration
+    - paper-writing
+    - formatting-review
+
+  # 혼합연구 유형별 워크플로우 분기
+  designVariants:
+    sequential-explanatory:
+      description: 양적 → 질적 순차 설계
+      flow:
+        - data-analysis-quantitative
+        - data-analysis-qualitative
+        - data-integration
+
+    sequential-exploratory:
+      description: 질적 → 양적 순차 설계
+      flow:
+        - data-analysis-qualitative
+        - data-analysis-quantitative
+        - data-integration
+
+    convergent-parallel:
+      description: 양적/질적 동시 수집 및 분석
+      parallelExecution:
+        - data-analysis-quantitative
+        - data-analysis-qualitative
+      then:
+        - data-integration
+
+    embedded:
+      description: 주 연구에 보조 연구 내재
+      primaryMethod: configurable
+      secondaryMethod: configurable
+
+  specialPrompts:
+    experiment-design: |
+      혼합연구 설계 시 다음을 포함하세요:
+      - 혼합연구 설계 유형 및 선택 근거
+      - 양적/질적 요소의 시점과 가중치
+      - 통합 지점 및 통합 방법
+      - 각 요소의 독립적 설계 상세
+    data-integration: |
+      자료 통합 시 다음을 고려하세요:
+      - 통합 전략 (joint display, transformation 등)
+      - 양적/질적 결과 간 수렴/발산 분석
+      - 메타 추론 도출
+      - 통합의 질(quality of integration) 확보

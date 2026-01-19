@@ -60,6 +60,7 @@ export const WorkflowDefinitionSchema = z.object({
         timeout: z.number().positive().optional(),
         continueOnError: z.boolean().default(false),
         approvalGates: z.array(z.string()).default([]),
+        methodologySpecific: z.record(z.unknown()).optional(),
     }).optional(),
     mergerAgentId: z.string().optional(),
 });

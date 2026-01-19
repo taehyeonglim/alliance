@@ -6,7 +6,18 @@
       "Bash(npm install)",
       "Bash(npm run build:*)",
       "Bash(dir:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run dev:*)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "Bash(npx tsx:*)",
+      "Bash(node:*)",
+      "Bash(ls \"C:\\\\Users\\\\user\\\\Documents\\\\GitHub\\\\alliance\\\\data\\\\test-sessions\\\\sessions\"\" 2>/dev/null || echo \"Directory not found \")",
+      "Bash(npx firebase deploy:*)",
+      "Bash(firebase deploy:*)",
+      "Bash(firebase functions:secrets:set:*)",
+      "Bash(npm run deploy:*)"
     ]
   }
 }

@@ -1,0 +1,98 @@
+# Qualitative Research Workflow Configuration
+# 질적 연구 워크플로우
+
+id: qualitative-research
+name: Qualitative Research Workflow
+type: sequential
+description: 근거이론, 현상학, 사례연구 등 질적 연구방법론을 위한 워크플로우
+
+methodology:
+  category: qualitative
+  supportedMethods:
+    - grounded-theory
+    - phenomenology
+    - case-study
+    - ethnography
+    - narrative-research
+    - content-analysis
+
+agents:
+  - id: idea-building
+    config:
+      focus: research-question-exploration
+      output:
+        - research_questions
+        - theoretical_sensitivity
+        - researcher_positionality
+
+  - id: literature-search
+    config:
+      focus: qualitative-studies
+      searchPriority:
+        - theoretical-frameworks
+        - conceptual-studies
+        - similar-qualitative-research
+      note: 근거이론의 경우 문헌검색 시점 조절 가능
+
+  - id: experiment-design
+    config:
+      focus: qualitative-design
+      designElements:
+        - participant_selection
+        - data_collection_methods
+        - interview_protocol
+        - observation_guide
+        - trustworthiness_strategies
+
+  - id: data-analysis
+    config:
+      focus: qualitative-analysis
+      analysisTypes:
+        - open_coding
+        - axial_coding
+        - selective_coding
+        - thematic_analysis
+        - narrative_analysis
+        - constant_comparison
+
+  - id: paper-writing
+    config:
+      format: qualitative-paper
+      sections:
+        - abstract
+        - introduction
+        - theoretical_framework
+        - methodology
+        - findings
+        - discussion
+        - implications
+
+  - id: formatting-review
+
+config:
+  continueOnError: false
+  approvalGates:
+    - experiment-design
+    - paper-writing
+    - formatting-review
+  specialPrompts:
+    experiment-design: |
+      질적 연구 설계 시 다음을 포함하세요:
+      - 연구 참여자 선정 기준 및 이론적 표집
+      - 자료 수집 방법 (심층면담, 관찰, 문서분석 등)
+      - 면담 질문지/관찰 가이드
+      - 신뢰성 확보 전략 (삼각검증, 동료검토, 참여자 확인 등)
+      - 연구자 반성성 및 위치성
+    data-analysis: |
+      질적 자료 분석 시 다음을 고려하세요:
+      - 코딩 전략 및 단계
+      - 범주화 및 주제 도출 과정
+      - 이론적 포화 판단 기준
+      - 분석 과정의 감사 추적(audit trail)
+  iterativeOptions:
+    enabled: true
+    description: 질적 연구의 순환적 특성 반영
+    allowBacktrack:
+      - from: data-analysis
+        to: experiment-design
+        reason: 이론적 표집을 위한 추가 자료 수집

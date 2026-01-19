@@ -1,0 +1,88 @@
+# Quantitative Research Workflow Configuration
+# 양적 연구 워크플로우
+
+id: quantitative-research
+name: Quantitative Research Workflow
+type: sequential
+description: 설문조사, 실험연구, 상관연구 등 양적 연구방법론을 위한 워크플로우
+
+methodology:
+  category: quantitative
+  supportedMethods:
+    - survey-research
+    - experimental-research
+    - correlational-research
+    - quasi-experimental
+    - longitudinal-study
+    - meta-analysis
+
+agents:
+  - id: idea-building
+    config:
+      focus: hypothesis-formulation
+      output:
+        - research_questions
+        - hypotheses
+        - variables_definition
+
+  - id: literature-search
+    config:
+      focus: quantitative-studies
+      searchPriority:
+        - empirical-studies
+        - statistical-analyses
+        - measurement-instruments
+
+  - id: experiment-design
+    config:
+      focus: statistical-design
+      designElements:
+        - sampling_strategy
+        - sample_size_calculation
+        - measurement_instruments
+        - validity_reliability
+        - control_variables
+
+  - id: data-analysis
+    config:
+      focus: statistical-analysis
+      analysisTypes:
+        - descriptive_statistics
+        - inferential_statistics
+        - hypothesis_testing
+        - regression_analysis
+        - anova
+
+  - id: paper-writing
+    config:
+      format: quantitative-paper
+      sections:
+        - abstract
+        - introduction
+        - literature_review
+        - methodology
+        - results
+        - discussion
+        - conclusion
+
+  - id: formatting-review
+
+config:
+  continueOnError: false
+  approvalGates:
+    - experiment-design
+    - paper-writing
+    - formatting-review
+  specialPrompts:
+    experiment-design: |
+      양적 연구 설계 시 다음을 포함하세요:
+      - 연구 설계 유형 (실험/준실험/비실험)
+      - 표본 크기 계산 및 표집 방법
+      - 측정 도구 및 타당도/신뢰도
+      - 통제 변인 및 외생 변인 처리
+    data-analysis: |
+      통계 분석 시 다음을 고려하세요:
+      - 기술통계 (평균, 표준편차, 빈도 등)
+      - 가설 검정 방법 선택 근거
+      - 유의수준 및 검정력 분석
+      - 효과크기 보고

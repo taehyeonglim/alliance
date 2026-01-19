@@ -1,0 +1,172 @@
+# Systematic Review / Meta-Analysis Workflow
+# 체계적 문헌고찰 / 메타분석 워크플로우
+
+id: systematic-review
+name: Systematic Review Workflow
+type: sequential
+description: 체계적 문헌고찰 및 메타분석을 위한 전문 워크플로우 (PRISMA 가이드라인 준수)
+
+methodology:
+  category: quantitative
+  supportedMethods:
+    - systematic-review
+    - meta-analysis
+
+# 체계적 문헌고찰 전용 에이전트 순서
+# 일반 연구와 달리 문헌검색이 핵심이며, 실험설계가 없음
+agents:
+  # 1단계: 연구 질문 및 프로토콜 수립
+  - id: idea-building
+    config:
+      focus: protocol-development
+      output:
+        - research_questions
+        - pico_criteria       # Population, Intervention, Comparison, Outcome
+        - inclusion_exclusion_criteria
+        - search_strategy
+      specialInstructions: |
+        체계적 문헌고찰 프로토콜을 수립합니다:
+        1. 연구 질문 정의 (PICO/PICOS 형식)
+        2. 포함/배제 기준 설정
+        3. 검색 전략 초안 작성
+        4. PROSPERO 등록 고려
+
+  # 2단계: 체계적 문헌 검색 (핵심 단계)
+  - id: literature-search
+    config:
+      focus: systematic-search
+      searchStrategy:
+        databases:
+          - PubMed/MEDLINE
+          - Cochrane Library
+          - EMBASE
+          - Web of Science
+          - Scopus
+          - 학술연구정보서비스(RISS)
+          - KoreaMed
+        greyLiterature: true
+        handsearching: true
+        citationTracking: true
+      output:
+        - search_results
+        - prisma_flow_data
+        - duplicate_removed_count
+      specialInstructions: |
+        체계적 검색을 수행합니다:
+        1. 각 데이터베이스별 검색식 적용
+        2. 검색 결과 기록 및 중복 제거
+        3. PRISMA 플로우 차트 데이터 생성
+        4. 검색 전략 재현성 확보
+
+  # 3단계: 문헌 선별 (스크리닝)
+  - id: screening
+    parentAgent: literature-search
+    config:
+      focus: study-selection
+      stages:
+        - title_abstract_screening
+        - full_text_screening
+      output:
+        - included_studies
+        - excluded_studies_with_reasons
+        - inter_rater_reliability
+      specialInstructions: |
+        2단계 스크리닝 수행:
+        1. 제목/초록 스크리닝
+        2. 전문 스크리닝
+        3. 포함/배제 사유 기록
+        4. 평가자 간 신뢰도 산출
+
+  # 4단계: 질 평가 및 비뚤림 위험 평가
+  - id: quality-assessment
+    config:
+      focus: risk-of-bias
+      tools:
+        - RoB2 (Cochrane Risk of Bias 2)
+        - ROBINS-I (비무작위 연구)
+        - Newcastle-Ottawa Scale
+        - JBI Critical Appraisal
+      output:
+        - quality_scores
+        - risk_of_bias_summary
+        - certainty_of_evidence
+      specialInstructions: |
+        포함된 연구의 질 평가:
+        1. 연구 유형별 적절한 도구 선택
+        2. 각 영역별 비뚤림 위험 평가
+        3. 전체 비뚤림 위험 요약
+        4. GRADE 근거 수준 평가
+
+  # 5단계: 데이터 추출 및 합성
+  - id: data-analysis
+    config:
+      focus: data-synthesis
+      analysisTypes:
+        - narrative_synthesis
+        - meta_analysis
+        - subgroup_analysis
+        - sensitivity_analysis
+        - publication_bias_assessment
+      statisticalMethods:
+        - effect_size_calculation
+        - heterogeneity_assessment (I², Q)
+        - forest_plot
+        - funnel_plot
+      output:
+        - extracted_data_table
+        - meta_analysis_results
+        - forest_plots
+        - heterogeneity_statistics
+      specialInstructions: |
+        데이터 추출 및 합성:
+        1. 사전 정의된 양식으로 데이터 추출
+        2. 효과크기 계산 (OR, RR, MD, SMD 등)
+        3. 이질성 평가 및 메타분석 수행
+        4. 하위그룹/민감도 분석
+        5. 출판 비뚤림 평가
+
+  # 6단계: 논문 작성 (PRISMA 형식)
+  - id: paper-writing
+    config:
+      format: prisma-checklist
+      sections:
+        - title
+        - abstract_structured
+        - introduction
+        - methods
+        - results
+        - discussion
+        - conclusion
+      requiredElements:
+        - prisma_flow_diagram
+        - forest_plot
+        - risk_of_bias_table
+        - summary_of_findings_table
+      output:
+        - paper_draft
+        - prisma_checklist_completed
+      specialInstructions: |
+        PRISMA 가이드라인에 따른 논문 작성:
+        1. PRISMA 2020 체크리스트 준수
+        2. PRISMA 플로우 다이어그램 포함
+        3. 근거 요약표(SoF) 작성
+        4. 등록 정보 명시
+
+  # 7단계: 포맷팅 및 최종 검토
+  - id: formatting-review
+
+config:
+  continueOnError: false
+  approvalGates:
+    - idea-building        # 프로토콜 승인
+    - literature-search    # 검색 전략 승인
+    - quality-assessment   # 질 평가 결과 승인
+    - paper-writing        # 논문 초안 승인
+    - formatting-review    # 최종 승인
+
+  # 체계적 문헌고찰 특수 설정
+  specialConfig:
+    requireProtocolRegistration: true
+    minimumReviewers: 2
+    consensusMechanism: discussion
+    prismaVersion: "2020"

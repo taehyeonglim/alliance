@@ -48,7 +48,7 @@ export {
 export { BaseAgent } from './core/base/index.js';
 
 // State management
-export { StateManager, MemoryPersistenceAdapter } from './state/index.js';
+export { StateManager, MemoryPersistenceAdapter, FilePersistenceAdapter } from './state/index.js';
 
 // Orchestration
 export {
@@ -94,7 +94,7 @@ export { ConsoleLogger, SilentLogger, createLogger } from './utils/index.js';
 export type { LogLevel, LoggerConfig } from './utils/index.js';
 
 // Main Alliance class
-import { StateManager } from './state/index.js';
+import { StateManager, FilePersistenceAdapter } from './state/index.js';
 import { WorkflowEngine } from './orchestration/index.js';
 import { InterventionManager, ConsoleInterventionHandler } from './human-in-loop/index.js';
 import { ConfigLoader } from './config/index.js';
@@ -117,8 +117,11 @@ import type { ILogger } from './core/interfaces/index.js';
  */
 export interface AllianceConfig {
   configDir?: string;
+  dataDir?: string;
   logLevel?: 'debug' | 'info' | 'warn' | 'error';
   autoApprove?: boolean;
+  /** Use file-based persistence for multi-device Git sync (default: true) */
+  persistToFile?: boolean;
 }
 
 /**
@@ -135,7 +138,14 @@ export class Alliance {
 
   constructor(config: AllianceConfig = {}) {
     this.logger = createLogger({ level: config.logLevel ?? 'info' });
-    this.stateManager = new StateManager();
+
+    // Use file persistence by default for multi-device Git sync
+    const useFilePersistence = config.persistToFile !== false;
+    const adapter = useFilePersistence
+      ? new FilePersistenceAdapter(config.dataDir)
+      : undefined;
+    this.stateManager = new StateManager(adapter);
+
     this.agentRegistry = new AgentRegistry();
     this.interventionManager = new InterventionManager();
     this.configLoader = new ConfigLoader(config.configDir ?? './config');

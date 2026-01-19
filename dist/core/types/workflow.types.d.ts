@@ -56,6 +56,8 @@ export interface WorkflowDefinition {
         timeout?: number;
         continueOnError?: boolean;
         approvalGates?: string[];
+        /** Methodology-specific settings for literature-based workflows */
+        methodologySpecific?: Record<string, unknown>;
     };
     mergerAgentId?: string;
 }
@@ -85,16 +87,19 @@ export declare const WorkflowDefinitionSchema: z.ZodObject<{
         timeout: z.ZodOptional<z.ZodNumber>;
         continueOnError: z.ZodDefault<z.ZodBoolean>;
         approvalGates: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
+        methodologySpecific: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
     }, "strip", z.ZodTypeAny, {
         continueOnError: boolean;
         approvalGates: string[];
         maxIterations?: number | undefined;
         timeout?: number | undefined;
+        methodologySpecific?: Record<string, unknown> | undefined;
     }, {
         maxIterations?: number | undefined;
         timeout?: number | undefined;
         continueOnError?: boolean | undefined;
         approvalGates?: string[] | undefined;
+        methodologySpecific?: Record<string, unknown> | undefined;
     }>>;
     mergerAgentId: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
@@ -111,6 +116,7 @@ export declare const WorkflowDefinitionSchema: z.ZodObject<{
         approvalGates: string[];
         maxIterations?: number | undefined;
         timeout?: number | undefined;
+        methodologySpecific?: Record<string, unknown> | undefined;
     } | undefined;
     mergerAgentId?: string | undefined;
 }, {
@@ -127,6 +133,7 @@ export declare const WorkflowDefinitionSchema: z.ZodObject<{
         timeout?: number | undefined;
         continueOnError?: boolean | undefined;
         approvalGates?: string[] | undefined;
+        methodologySpecific?: Record<string, unknown> | undefined;
     } | undefined;
     mergerAgentId?: string | undefined;
 }>;

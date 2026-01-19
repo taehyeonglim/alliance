@@ -259,6 +259,278 @@ export class WorkflowEngine {
   }
 
   /**
+   * Get workflow definition based on methodology
+   * 연구방법론에 따른 워크플로우 정의 반환
+   */
+  getWorkflowForMethodology(methodologyId: string): WorkflowDefinition {
+    // 문헌 기반 연구방법론 목록 (실험설계 불필요)
+    const literatureBasedMethods = [
+      // 체계적/양적 문헌고찰
+      'systematic-review',
+      'meta-analysis',
+      'rapid-review',
+      'umbrella-review',
+      // 질적 문헌고찰
+      'scoping-review',
+      'narrative-review',
+      'realist-review',
+      'critical-review',
+      'qualitative-systematic-review',
+      // 통합적 문헌고찰
+      'integrative-review',
+    ];
+
+    // 문헌 기반 연구는 모두 문헌고찰 워크플로우 사용
+    if (literatureBasedMethods.includes(methodologyId)) {
+      this.logger.info(`Literature-based methodology '${methodologyId}' → Literature Review Workflow`);
+      return this.getLiteratureReviewWorkflow(methodologyId);
+    }
+
+    // 방법론별 워크플로우 매핑
+    const workflowMap: Record<string, WorkflowDefinition> = {
+      // 양적 연구 (실험/조사 기반)
+      'survey': this.getQuantitativeWorkflow(),
+      'survey-research': this.getQuantitativeWorkflow(),
+      'experimental': this.getQuantitativeWorkflow(),
+      'experimental-research': this.getQuantitativeWorkflow(),
+      'correlational': this.getQuantitativeWorkflow(),
+      'correlational-research': this.getQuantitativeWorkflow(),
+      'quasi-experimental': this.getQuantitativeWorkflow(),
+      'longitudinal': this.getQuantitativeWorkflow(),
+      'longitudinal-study': this.getQuantitativeWorkflow(),
+
+      // 질적 연구 (현장/인터뷰 기반)
+      'grounded-theory': this.getQualitativeWorkflow(),
+      'phenomenology': this.getQualitativeWorkflow(),
+      'case-study': this.getQualitativeWorkflow(),
+      'ethnography': this.getQualitativeWorkflow(),
+      'narrative': this.getQualitativeWorkflow(),
+      'narrative-research': this.getQualitativeWorkflow(),
+      'action-research': this.getQualitativeWorkflow(),
+      'content-analysis': this.getQualitativeWorkflow(),
+
+      // 혼합 연구
+      'convergent-mixed': this.getMixedMethodsWorkflow(),
+      'explanatory-sequential': this.getMixedMethodsWorkflow(),
+      'exploratory-sequential': this.getMixedMethodsWorkflow(),
+      'sequential-explanatory': this.getMixedMethodsWorkflow(),
+      'sequential-exploratory': this.getMixedMethodsWorkflow(),
+      'convergent-parallel': this.getMixedMethodsWorkflow(),
+      'embedded-design': this.getMixedMethodsWorkflow(),
+      'delphi-method': this.getMixedMethodsWorkflow(),
+    };
+
+    const workflow = workflowMap[methodologyId];
+    if (workflow) {
+      this.logger.info(`Selected workflow for methodology '${methodologyId}': ${workflow.id}`);
+      return workflow;
+    }
+
+    this.logger.warn(`No specific workflow for methodology '${methodologyId}', using default`);
+    return this.getDefaultResearchWorkflow();
+  }
+
+  /**
+   * Literature Review Workflow (문헌고찰 전용 워크플로우)
+   * 체계적 문헌고찰, 주제범위 문헌고찰, 메타분석 등 모든 문헌 기반 연구에 사용
+   * 핵심: 실험설계(experiment-design) 단계를 건너뜀
+   */
+  private getLiteratureReviewWorkflow(methodologyId: string): WorkflowDefinition {
+    // 방법론별 특수 설정
+    const methodologyConfig: Record<string, {
+      name: string;
+      prismaCompliance: boolean;
+      qualityAssessment: boolean;
+      metaAnalysis: boolean;
+    }> = {
+      'systematic-review': {
+        name: '체계적 문헌고찰',
+        prismaCompliance: true,
+        qualityAssessment: true,
+        metaAnalysis: false,
+      },
+      'meta-analysis': {
+        name: '메타분석',
+        prismaCompliance: true,
+        qualityAssessment: true,
+        metaAnalysis: true,
+      },
+      'scoping-review': {
+        name: '주제범위 문헌고찰',
+        prismaCompliance: true, // PRISMA-ScR 사용
+        qualityAssessment: false, // 품질 평가 선택적
+        metaAnalysis: false,
+      },
+      'narrative-review': {
+        name: '서술적 문헌고찰',
+        prismaCompliance: false,
+        qualityAssessment: false,
+        metaAnalysis: false,
+      },
+      'integrative-review': {
+        name: '통합적 문헌고찰',
+        prismaCompliance: false,
+        qualityAssessment: true,
+        metaAnalysis: false,
+      },
+      'rapid-review': {
+        name: '신속 문헌고찰',
+        prismaCompliance: true, // 간소화된 PRISMA
+        qualityAssessment: true, // 간소화
+        metaAnalysis: false,
+      },
+      'umbrella-review': {
+        name: '우산 문헌고찰',
+        prismaCompliance: true,
+        qualityAssessment: true, // AMSTAR2
+        metaAnalysis: true,
+      },
+      'realist-review': {
+        name: '실재론적 문헌고찰',
+        prismaCompliance: false, // RAMESES 사용
+        qualityAssessment: true,
+        metaAnalysis: false,
+      },
+      'critical-review': {
+        name: '비판적 문헌고찰',
+        prismaCompliance: false,
+        qualityAssessment: false,
+        metaAnalysis: false,
+      },
+      'qualitative-systematic-review': {
+        name: '질적 체계적 문헌고찰',
+        prismaCompliance: true, // ENTREQ 사용
+        qualityAssessment: true, // CASP 등
+        metaAnalysis: false, // 대신 메타합성
+      },
+    };
+
+    const config = methodologyConfig[methodologyId] || {
+      name: '문헌고찰',
+      prismaCompliance: false,
+      qualityAssessment: true,
+      metaAnalysis: false,
+    };
+
+    return {
+      id: 'literature-review',
+      name: `Literature Review Workflow (${config.name})`,
+      type: 'sequential',
+      agents: [
+        { id: 'idea-building' },      // 연구질문/프로토콜 수립
+        { id: 'literature-search' },   // 체계적 문헌 검색 (핵심!)
+        // ⚠️ 실험설계(experiment-design) 생략 - 문헌고찰에서는 불필요
+        { id: 'data-analysis' },       // 문헌 분석/질 평가/합성
+        { id: 'paper-writing' },       // 논문 작성
+        { id: 'formatting-review' },   // 최종 검토
+      ],
+      config: {
+        continueOnError: false,
+        approvalGates: [
+          'idea-building',      // 프로토콜/연구질문 승인
+          'literature-search',  // 검색 전략 및 결과 승인
+          'data-analysis',      // 문헌 분석 결과 승인
+          'paper-writing',
+          'formatting-review',
+        ],
+        methodologySpecific: {
+          type: 'literature-review',
+          subtype: methodologyId,
+          ...config,
+          // 문헌고찰 공통 특징
+          skippedAgents: ['experiment-design'],
+          focusOnLiteratureSearch: true,
+        },
+      },
+    };
+  }
+
+  /**
+   * Quantitative Research Workflow
+   * 양적 연구 워크플로우
+   */
+  private getQuantitativeWorkflow(): WorkflowDefinition {
+    return {
+      id: 'quantitative-research',
+      name: 'Quantitative Research Workflow',
+      type: 'sequential',
+      agents: [
+        { id: 'idea-building' },
+        { id: 'literature-search' },
+        { id: 'experiment-design' },
+        { id: 'data-analysis' },
+        { id: 'paper-writing' },
+        { id: 'formatting-review' },
+      ],
+      config: {
+        continueOnError: false,
+        approvalGates: ['experiment-design', 'paper-writing', 'formatting-review'],
+        methodologySpecific: {
+          type: 'quantitative',
+          statisticalAnalysis: true,
+        },
+      },
+    };
+  }
+
+  /**
+   * Qualitative Research Workflow
+   * 질적 연구 워크플로우
+   */
+  private getQualitativeWorkflow(): WorkflowDefinition {
+    return {
+      id: 'qualitative-research',
+      name: 'Qualitative Research Workflow',
+      type: 'sequential',
+      agents: [
+        { id: 'idea-building' },
+        { id: 'literature-search' },
+        { id: 'experiment-design' },  // 질적 연구 설계
+        { id: 'data-analysis' },       // 질적 분석 (코딩, 주제분석 등)
+        { id: 'paper-writing' },
+        { id: 'formatting-review' },
+      ],
+      config: {
+        continueOnError: false,
+        approvalGates: ['experiment-design', 'paper-writing', 'formatting-review'],
+        methodologySpecific: {
+          type: 'qualitative',
+          iterativeAnalysis: true,
+          trustworthiness: ['credibility', 'transferability', 'dependability', 'confirmability'],
+        },
+      },
+    };
+  }
+
+  /**
+   * Mixed Methods Research Workflow
+   * 혼합 연구 워크플로우
+   */
+  private getMixedMethodsWorkflow(): WorkflowDefinition {
+    return {
+      id: 'mixed-methods-research',
+      name: 'Mixed Methods Research Workflow',
+      type: 'hybrid',
+      agents: [
+        { id: 'idea-building' },
+        { id: 'literature-search' },
+        { id: 'experiment-design' },
+        { id: 'data-analysis' },  // 양적+질적 통합 분석
+        { id: 'paper-writing' },
+        { id: 'formatting-review' },
+      ],
+      config: {
+        continueOnError: false,
+        approvalGates: ['experiment-design', 'data-analysis', 'paper-writing', 'formatting-review'],
+        methodologySpecific: {
+          type: 'mixed-methods',
+          integrationPoint: 'data-analysis',
+        },
+      },
+    };
+  }
+
+  /**
    * Get active workflows
    */
   getActiveWorkflows(): IWorkflow[] {
