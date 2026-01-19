@@ -344,19 +344,78 @@ Hybrid: Sequential + Parallel 조합
 
 ## 현재 상태
 
+### Core Engine (src/)
 - **완료**: 프로젝트 구조, 인터페이스, 오케스트레이션, HITL, 설정 시스템
 - **스켈레톤**: 6개 연구 에이전트 (skills 미정의, 실제 로직 미구현)
 - **예정**: LLM 연동, Tools 구현, 실제 연구 로직
 
+### Dashboard (dashboard/)
+- **완료**: React 프론트엔드 + Firebase Hosting 배포
+- **완료**: Cloud Functions 백엔드 (Node.js 20, asia-northeast3)
+- **완료**: Gemini 2.0 Flash AI 연동 (워크플로우 자동 실행)
+- **완료**: Firebase Authentication (Google OAuth)
+- **완료**: 4단계 Phase 기반 워크플로우 자동 실행
+- **완료**: HITL 승인/거절 Web UI
+- **완료**: 휴지통 기능 (30일 후 Cloud Scheduler로 자동 삭제)
+
 ## 중요 파일 (자주 수정)
 
+### Core Engine
 - `config/agents/*.yaml` - 에이전트 skills 정의
 - `src/agents/research/*.ts` - 에이전트 로직 구현
 - `src/orchestration/WorkflowEngine.ts` - 워크플로우 실행
 - `src/index.ts` - 새 에이전트 등록
+
+### Dashboard
+- `dashboard/src/services/firestoreService.ts` - Firestore CRUD + 실시간 구독
+- `dashboard/src/pages/*.tsx` - 페이지 컴포넌트
+- `dashboard/src/types/index.ts` - TypeScript 타입 정의
+- `dashboard/functions/src/index.ts` - Cloud Functions (5개 함수)
+
+## Dashboard 배포 명령어
+
+```bash
+cd dashboard
+
+# 프론트엔드만 배포
+firebase deploy --only hosting
+
+# Cloud Functions만 배포
+firebase deploy --only functions
+
+# 전체 배포
+npm run deploy
+```
+
+## Cloud Functions 목록
+
+| 함수명 | 트리거 | 설명 |
+|--------|--------|------|
+| `onWorkflowCreated` | Firestore onCreate | 워크플로우 생성 시 Phase 기반 자동 실행 |
+| `processApproval` | HTTPS Callable | HITL 승인/거절 처리 |
+| `restartWorkflow` | HTTPS Callable | 워크플로우 재시작 |
+| `cleanupTrash` | Cloud Scheduler (매일 03:00 KST) | 휴지통 자동 정리 |
+| `manualCleanupTrash` | HTTPS Callable | 수동 휴지통 정리 |
+
+## Dashboard Phase 기반 워크플로우
+
+| Phase | 이름 | 에이전트 | 승인 필요 |
+|-------|------|----------|----------|
+| 1 | 연구 기획 | Idea Building, Literature Search | No |
+| 2 | 방법론 설계 | Method Selection, Experiment Design | **Yes** |
+| 3 | 분석 및 검증 | Data Analysis, Result Validation | No |
+| 4 | 논문 작성 | Paper Writing, Peer Review, Formatting Review | **Yes** |
+
+## 휴지통 (Soft Delete) 시스템
+
+- 워크플로우 삭제 시 `deletedAt` 필드 설정
+- `permanentDeleteAt` = 삭제일 + 30일
+- Cloud Scheduler가 매일 03:00 KST에 만료 항목 자동 삭제
+- `subscribeToWorkflows()`는 `deletedAt` 있는 항목 자동 필터링
 
 ## 참고
 
 - Google ADK 패턴 준수 (outputKey, escalate, SequentialAgent 등)
 - 승인 게이트는 `config.approvalGates` 배열로 설정
 - 임시 상태는 `StateKeys.temp('key')` 사용 (현재 턴만 유효)
+- Dashboard는 Firebase 기반 (Hosting, Functions, Firestore, Auth)

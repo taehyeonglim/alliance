@@ -5,14 +5,33 @@
 Alliance 멀티 에이전트 연구 시스템을 위한 웹 기반 대시보드 UI입니다.
 연구자가 워크플로우를 쉽게 실행하고, 진행 상황을 모니터링하며, HITL(Human-in-the-Loop) 승인을 처리할 수 있습니다.
 
+## 배포 정보
+
+- **프론트엔드**: Firebase Hosting (https://alliance-dashboard-xxx.web.app)
+- **백엔드**: Firebase Cloud Functions (asia-northeast3)
+- **데이터베이스**: Cloud Firestore
+- **인증**: Firebase Authentication (Google OAuth)
+
+### 배포된 Cloud Functions
+
+| 함수명 | 트리거 | 설명 |
+|--------|--------|------|
+| `onWorkflowCreated` | Firestore onCreate | 워크플로우 생성 시 Phase 기반 자동 실행 |
+| `processApproval` | HTTPS Callable | HITL 승인/거절 처리 |
+| `restartWorkflow` | HTTPS Callable | 워크플로우 재시작 |
+| `cleanupTrash` | Cloud Scheduler (매일 03:00 KST) | 30일 지난 휴지통 항목 영구 삭제 |
+| `manualCleanupTrash` | HTTPS Callable | 수동 휴지통 정리 |
+
 ## 기술 스택
 
 - **프론트엔드**: React + Vite + TypeScript
 - **스타일링**: Tailwind CSS
 - **라우팅**: React Router DOM
-- **상태 관리**: TanStack React Query
+- **상태 관리**: React Context + Firestore 실시간 구독
 - **아이콘**: Lucide React
-- **백엔드 통신**: REST API (추후 WebSocket for 실시간 업데이트)
+- **백엔드**: Firebase Cloud Functions (Node.js 20)
+- **데이터베이스**: Cloud Firestore (실시간 구독)
+- **AI**: Google Gemini 2.0 Flash (via @google/genai)
 
 ## 프로젝트 구조
 
@@ -21,56 +40,57 @@ dashboard/
 ├── src/
 │   ├── components/          # 재사용 컴포넌트
 │   │   ├── layout/          # 레이아웃 관련
-│   │   │   ├── Sidebar.tsx
+│   │   │   ├── Sidebar.tsx  # 사이드바 (휴지통 포함)
 │   │   │   ├── Header.tsx
 │   │   │   └── Layout.tsx
 │   │   ├── workflow/        # 워크플로우 관련
-│   │   │   ├── WorkflowCard.tsx
-│   │   │   ├── AgentNode.tsx
-│   │   │   └── WorkflowVisualizer.tsx
-│   │   ├── agents/          # 에이전트 관련
-│   │   │   ├── AgentCard.tsx
-│   │   │   └── AgentStatus.tsx
+│   │   │   ├── WorkflowCard.tsx  # 삭제 메뉴 포함
+│   │   │   ├── PhaseCard.tsx     # Phase별 상태 표시
+│   │   │   └── AgentCard.tsx     # 에이전트 상태 표시
 │   │   ├── hitl/            # HITL 관련
-│   │   │   ├── ApprovalModal.tsx
-│   │   │   └── ApprovalQueue.tsx
+│   │   │   └── ApprovalCard.tsx  # 승인 카드
+│   │   ├── auth/            # 인증 관련
+│   │   │   └── ProtectedRoute.tsx
 │   │   └── common/          # 공통 컴포넌트
 │   │       ├── Button.tsx
 │   │       ├── Card.tsx
-│   │       ├── Modal.tsx
-│   │       ├── Input.tsx
-│   │       └── Badge.tsx
+│   │       ├── Badge.tsx
+│   │       ├── ProgressBar.tsx
+│   │       └── ...
 │   ├── pages/               # 페이지 컴포넌트
 │   │   ├── Dashboard.tsx    # 메인 대시보드
 │   │   ├── NewResearch.tsx  # 새 연구 시작
-│   │   ├── Workflow.tsx     # 워크플로우 상세/모니터링
+│   │   ├── Workflows.tsx    # 워크플로우 목록
+│   │   ├── WorkflowDetail.tsx # 워크플로우 상세/모니터링
 │   │   ├── Agents.tsx       # 에이전트 목록/상태
 │   │   ├── Approvals.tsx    # HITL 승인 대기 목록
 │   │   ├── History.tsx      # 실행 이력
-│   │   └── Settings.tsx     # 설정
-│   ├── hooks/               # 커스텀 훅
-│   │   ├── useWorkflow.ts
-│   │   ├── useAgents.ts
-│   │   └── useApprovals.ts
-│   ├── api/                 # API 클라이언트
-│   │   ├── client.ts
-│   │   ├── workflows.ts
-│   │   ├── agents.ts
-│   │   └── approvals.ts
+│   │   ├── Settings.tsx     # 설정
+│   │   ├── Login.tsx        # 로그인 페이지
+│   │   ├── Trash.tsx        # 휴지통 (30일 후 자동 삭제)
+│   │   └── index.ts         # 페이지 export
+│   ├── contexts/            # React Context
+│   │   ├── AuthContext.tsx  # Firebase Auth 상태
+│   │   └── ThemeContext.tsx # 다크/라이트 테마
+│   ├── services/            # 서비스 레이어
+│   │   └── firestoreService.ts  # Firestore CRUD + 실시간 구독
+│   ├── lib/                 # 라이브러리 설정
+│   │   └── firebase.ts      # Firebase 초기화
 │   ├── types/               # TypeScript 타입
-│   │   └── index.ts
-│   ├── utils/               # 유틸리티
-│   │   └── index.ts
+│   │   └── index.ts         # Workflow, Approval, Phase 등
 │   ├── App.tsx
 │   ├── main.tsx
 │   └── index.css
+├── functions/               # Cloud Functions
+│   ├── src/
+│   │   └── index.ts         # 5개 함수 정의
+│   ├── package.json
+│   └── tsconfig.json
 ├── public/
 ├── index.html
 ├── package.json
-├── tsconfig.json
-├── vite.config.ts
-├── tailwind.config.js
-├── postcss.config.js
+├── firebase.json            # Firebase 설정
+├── firestore.rules          # Firestore 보안 규칙
 └── spec.md                  # 이 문서
 ```
 
@@ -342,46 +362,80 @@ dashboard/
 - ✅ 완료 (completed)
 - 🔴 오류 (error)
 
-## API 엔드포인트 (백엔드 연동)
+## Firestore 데이터 구조
 
-### Workflows
-```
-GET    /api/workflows              # 워크플로우 목록
-POST   /api/workflows              # 새 워크플로우 시작
-GET    /api/workflows/:id          # 워크플로우 상세
-DELETE /api/workflows/:id          # 워크플로우 중지
-GET    /api/workflows/:id/logs     # 실행 로그
+### Collection: `workflows`
+```typescript
+interface Workflow {
+  id: string;
+  name: string;
+  researchTopic: string;
+  methodology: string;
+  status: 'pending' | 'running' | 'paused' | 'completed' | 'failed';
+  progress: number;  // 0-100
+
+  // Phase 기반 구조
+  phases: Phase[];
+  currentPhase: number;
+  currentAgent?: string;
+
+  // 타임스탬프
+  createdAt: string;
+  updatedAt: string;
+
+  // 소프트 삭제
+  deletedAt?: string;           // 삭제 시간
+  permanentDeleteAt?: string;   // 30일 후 영구 삭제 예정 시간
+}
+
+interface Phase {
+  id: number;
+  name: string;
+  description: string;
+  agents: Agent[];
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  requiresApproval: boolean;
+}
 ```
 
-### Agents
-```
-GET    /api/agents                 # 에이전트 목록
-GET    /api/agents/:id             # 에이전트 상세
-GET    /api/agents/:id/status      # 에이전트 상태
+### Collection: `approvals`
+```typescript
+interface Approval {
+  id: string;
+  workflowId: string;
+  workflowName: string;
+  phaseId: number;
+  phaseName: string;
+  agentId: string;
+  agentName: string;
+  status: 'pending' | 'approved' | 'rejected';
+  content: string;
+  createdAt: string;
+  respondedAt?: string;
+  feedback?: string;
+}
 ```
 
-### Approvals (HITL)
-```
-GET    /api/approvals              # 승인 대기 목록
-POST   /api/approvals/:id/approve  # 승인
-POST   /api/approvals/:id/reject   # 거절
-POST   /api/approvals/:id/modify   # 수정 요청
-```
+## Cloud Functions API
 
-### Sessions
-```
-GET    /api/sessions               # 세션 목록
-GET    /api/sessions/:id           # 세션 상태
-GET    /api/sessions/:id/state     # 세션 상태값
+### Callable Functions
+```typescript
+// 승인 처리
+processApproval({ approvalId: string, action: 'approve' | 'reject', feedback?: string })
+
+// 워크플로우 재시작
+restartWorkflow({ workflowId: string })
+
+// 수동 휴지통 정리
+manualCleanupTrash()
 ```
 
 ## 실시간 업데이트
 
-WebSocket을 통해 다음 이벤트를 수신:
-- `workflow:status` - 워크플로우 상태 변경
-- `agent:status` - 에이전트 상태 변경
-- `approval:new` - 새 승인 요청
-- `log:new` - 새 로그 메시지
+Firestore onSnapshot을 통해 실시간 구독:
+- `subscribeToWorkflows()` - 워크플로우 목록 (삭제된 항목 제외)
+- `subscribeToApprovals()` - 승인 대기 목록
+- `subscribeToWorkflow(id)` - 개별 워크플로우 상세
 
 ## 설치 및 실행
 
@@ -395,23 +449,55 @@ npm run dev
 
 # 프로덕션 빌드
 npm run build
+
+# Firebase 배포
+npm run deploy              # 전체 배포 (Hosting + Functions)
+firebase deploy --only hosting    # Hosting만
+firebase deploy --only functions  # Functions만
 ```
 
 ## 환경 변수
 
 ```env
-VITE_API_URL=http://localhost:3001/api
-VITE_WS_URL=ws://localhost:3001
+# .env.local
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_STORAGE_BUCKET=...
+VITE_FIREBASE_MESSAGING_SENDER_ID=...
+VITE_FIREBASE_APP_ID=...
 ```
 
-## 구현 우선순위
+## 구현 상태
 
-1. **Phase 1**: 기본 레이아웃, 라우팅, 대시보드 페이지
-2. **Phase 2**: NewResearch, Workflow 모니터링 페이지
-3. **Phase 3**: Approvals (HITL) 페이지
-4. **Phase 4**: Agents, History, Settings 페이지
-5. **Phase 5**: WebSocket 실시간 업데이트
-6. **Phase 6**: 백엔드 API 서버 구현
+### 완료된 기능
+- [x] **Phase 1**: 기본 레이아웃, 라우팅, 대시보드 페이지
+- [x] **Phase 2**: NewResearch, Workflow 모니터링 페이지
+- [x] **Phase 3**: Approvals (HITL) 승인/거절 처리
+- [x] **Phase 4**: Agents, History, Settings 페이지
+- [x] **Phase 5**: Firestore 실시간 구독 (onSnapshot)
+- [x] **Phase 6**: Cloud Functions 백엔드
+- [x] **Phase 7**: Firebase Authentication (Google OAuth)
+- [x] **Phase 8**: 휴지통 기능 (30일 후 자동 영구 삭제)
+
+### Phase 기반 연구 워크플로우
+
+워크플로우는 4개 Phase로 구성되며, 각 Phase에 포함된 에이전트가 순차 실행됩니다:
+
+| Phase | 이름 | 포함 에이전트 | 승인 필요 |
+|-------|------|---------------|----------|
+| 1 | 연구 기획 | Idea Building, Literature Search | No |
+| 2 | 방법론 설계 | Method Selection, Experiment Design | **Yes** |
+| 3 | 분석 및 검증 | Data Analysis, Result Validation | No |
+| 4 | 논문 작성 | Paper Writing, Peer Review, Formatting Review | **Yes** |
+
+### 휴지통 (Soft Delete) 기능
+
+- 워크플로우 삭제 시 즉시 삭제되지 않고 휴지통으로 이동
+- `deletedAt` 필드에 삭제 시간 기록
+- `permanentDeleteAt` 필드에 30일 후 날짜 기록
+- Cloud Scheduler가 매일 03:00 KST에 만료된 항목 자동 삭제
+- 휴지통에서 복원 또는 즉시 영구 삭제 가능
 
 ## 디자인 가이드라인
 
